@@ -1,10 +1,14 @@
 const express = require('express');
-const request = require('request');
 const app = express();
 const bodyParser = require('body-parser');
+const jsonfile = require('jsonfile')
+
 const mailchimp = require("@mailchimp/mailchimp_marketing");
+
+const apiKey = jsonfile.readFileSync(__dirname + "/apikey.json").apiKey;
+
 mailchimp.setConfig({
-    apiKey: "1b324b336463f538869a6c2917b1ef38-us18",
+    apiKey: apiKey,
     server: "us18",
   });
 const listId = "fc8da8e711";
@@ -12,9 +16,9 @@ const listId = "fc8da8e711";
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname)); //css miatt
 
-app.listen(process.env.PORT || 3000, () => {  
-    console.log(`Server is running on port 3000.`); 
-    pingMailChimpServer();
+const server = app.listen(process.env.PORT || 8000, () => {  
+    console.log(`Server is running on port ${server.address().port}.`); 
+      pingMailChimpServer();
 });
 
 app.get('/', (req, res) => {
