@@ -24,7 +24,7 @@ const jokeApiParameters = {
 };
 
 
-//------------------------Start, and endpoints-----------------------------------//
+//------------------------Start, and endpoints-----------------------------------
 const server = app.listen(process.env.PORT || 8000, () => {  
     console.log(`Server is running on port ${server.address().port}.`); 
     pingMailChimpServer();
@@ -34,21 +34,37 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
-app.get('/jokes', (req, res) => {
+
+app.post('/', (req, res) => {
+  addContactMember({firstName: req.body.firstname, 
+    lastName: req.body.lastname, 
+    email: req.body.email}, res);
+});
+
+app.post('/failure', (req, res) => {
+  res.redirect('/');
+});
+
+
+//!--------------------- Test endpoint section--------------------------------------
+app.get('/joke_test', (req, res) => {
     getJoke().then((joke) => {
       res.send(`<p>${joke}</p>`);
     })
 });
 
-app.get('/test_send', (req, res) => {
-    createCampaign()
-    .then((id) => {
-      setupCampaign(id);
-    })
+
+app.get('/create_test', (req, res) => {
+    createCampaign();
+    res.send("Campaign created");
+});
+
+app.get('/send_test', (req, res) => {
+    setupCampaign();
     res.send('Campaign message is sent.');
 });
 
-app.get('/update_campaign', (req, res) => {
+app.get('/update_test', (req, res) => {
   listCampaigns()
   .then((campaignIds) => {
     if(campaignIds.length > 0) {
@@ -62,31 +78,38 @@ app.get('/update_campaign', (req, res) => {
     })
 });
 
-app.post('/', (req, res) => {
-    addContactMember({firstName: req.body.firstname, 
-      lastName: req.body.lastname, 
-      email: req.body.email}, res);
+app.get('/delete_test', (req, res) => {
+  listCampaigns()
+  .then((campaignIds) => {
+    if(campaignIds.length > 0) {
+        campaignId = campaignIds[0].id;
+        deleteCampaign(campaignId);
+        res.send("Deleted campaign");
+    }});
 });
 
-app.post('/failure', (req, res) => {
-    res.redirect('/');
+ app.get('/list_test', (req, res) => {
+       listCampaigns()
+       .then((campaignIds) => {
+        if(campaignIds.length > 0) 
+          res.send(campaignIds[0].id);
+        else res.send("No campaign available");  
+        })
 });
+//-----------------------------------------------------------------
 
-// app.get('/list', (req, res) => {
-//     listCampaigns();
-//     res.send('');
-// });
-//-----------------------------------------------------------------//
-
-function setupCampaign(id) {
-  campaignId = id;
-  console.log(`Campaign id: ${campaignId}`);
-  getJoke()
+function setupCampaign() {
+  listCampaigns()
+  .then((campaignIds) => {
+    if(campaignIds.length > 0) {
+        campaignId = campaignIds[0].id;
+        console.log(`Campaign id: ${campaignId}`);
+        return getJoke()
+    }})
     .then((joke) => {
       console.log(joke);
       setCampaignContent(campaignId, joke); 
       sendCampaign(campaignId)
-      deleteCampaign(campaignId);
     })
     .catch((error) => {
       console.log(error);
