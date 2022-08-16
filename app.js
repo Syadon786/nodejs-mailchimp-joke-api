@@ -7,7 +7,7 @@ const https = require('https');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(__dirname)); //css miatt
 
-//Mailchimp api setup
+//Mailchimp api setup-----------------------------------
 const mailchimp = require("@mailchimp/mailchimp_marketing");
 const mailChimpApiKey = jsonfile.readFileSync(__dirname + "/apikey.json").mailChimpApiKey;
 mailchimp.setConfig({
@@ -17,7 +17,7 @@ mailchimp.setConfig({
 const listId = "fc8da8e711";
 var campaignId = "";
 
-//JokeApi api setup
+//JokeApi api setup-----------------------------------
 const jokeApiUrl = "https://v2.jokeapi.dev/joke/Dark?";
 const jokeApiParameters = {
     amount: 1
@@ -35,12 +35,31 @@ app.get('/', (req, res) => {
 });
 
 app.get('/jokes', (req, res) => {
-    sendMail(res);
+    getJoke().then((joke) => {
+      res.send(`<p>${joke}</p>`);
+    })
 });
 
-app.get('/list', (req, res) => {
-    listCampaigns();
-    res.send('');
+app.get('/test_send', (req, res) => {
+    createCampaign()
+    .then((id) => {
+      setupCampaign(id);
+    })
+    res.send('Campaign message is sent.');
+});
+
+app.get('/update_campaign', (req, res) => {
+  listCampaigns()
+  .then((campaignIds) => {
+    if(campaignIds.length > 0) {
+        campaignId = campaignIds[0].id;
+        return getJoke();
+    }
+    })
+    .then((joke) => {
+      setCampaignContent(campaignId, joke);
+      res.send("Updated campaign content.");
+    })
 });
 
 app.post('/', (req, res) => {
@@ -52,29 +71,29 @@ app.post('/', (req, res) => {
 app.post('/failure', (req, res) => {
     res.redirect('/');
 });
+
+// app.get('/list', (req, res) => {
+//     listCampaigns();
+//     res.send('');
+// });
 //-----------------------------------------------------------------//
 
-function sendMail(res) {
-  listCampaigns()
-  .then((campaignIds) => {
-    if(campaignIds.length > 0) {
-        campaignId = campaignIds[0].id;
-        console.log(`Campaign id: ${campaignId}`);
-        return getJoke();
-    }
-  })
-  .catch((error) => {
-    console.log("There is no campaign.");
-  }) 
-  .then((joke) => {
+function setupCampaign(id) {
+  campaignId = id;
+  console.log(`Campaign id: ${campaignId}`);
+  getJoke()
+    .then((joke) => {
       console.log(joke);
-      setCampaignContent(campaignId, joke);
-      res.send(joke);
+      setCampaignContent(campaignId, joke); 
+      sendCampaign(campaignId)
+      deleteCampaign(campaignId);
     })
- ;
+    .catch((error) => {
+      console.log(error);
+    });
 }
 
-//! Get a joke with jokeapi
+//! Get a joke with jokeapi----------------------------------------------------------------------
 function getJoke() {
   return new Promise((resolve, reject) =>  {
       https.get(`${jokeApiUrl}${Object.entries(jokeApiParameters)[0].join('=')}`, (response) => {
@@ -144,6 +163,7 @@ async function createCampaign() {
                             });
                 
   console.log(response);
+  return await response.id;
 }
 
 async function listCampaigns() {
@@ -153,6 +173,16 @@ async function listCampaigns() {
 
 async function setCampaignContent(id, joke) {
   const response = await mailchimp.campaigns.setContent(id, {plain_text: joke});
+  console.log(response);
+}
+
+async function sendCampaign(id) {
+  const response = await mailchimp.campaigns.send(id);
+  console.log(response);
+}
+
+async function deleteCampaign(id) {
+  const response = await mailchimp.campaigns.remove(id);
   console.log(response);
 }
 /*async function getListMemberEmails()  {   //filter csak e-mail info lekérdezésére fields: ["members.email_address"]
