@@ -54,27 +54,19 @@ app.get('/send_test', (req, res) => {
 });
 
 app.get('/update_test', (req, res) => {
-  mailchimp.listCampaigns()
-  .then((campaignIds) => {
-    if(campaignIds.length > 0) {
-        mailchimp.campaignId = campaignIds[0].id;
-        return jokeapi.getJoke();
-    }
-    })
+    jokeapi.getJoke()
     .then((joke) => {
-      mailchimp.setCampaignContent(mailchimp.campaignId, joke);
+      mailchimp.setCampaignContent(joke);
       res.send("Updated campaign content.");
+    })
+    .catch((error) => {
+      console.log(error);
     })
 });
 
 app.get('/delete_test', (req, res) => {
-  mailchimp.listCampaigns()
-  .then((campaignIds) => {
-    if(campaignIds.length > 0) {
-        mailchimp.campaignId = campaignIds[0].id;
-        mailchimp.deleteCampaign(mailchimp.campaignId);
-        res.send("Deleted campaign");
-    }});
+    mailchimp.deleteCampaign();
+    res.send("Deleted campaign");
 });
 
  app.get('/list_test', (req, res) => {
@@ -83,6 +75,9 @@ app.get('/delete_test', (req, res) => {
         if(campaignIds.length > 0) 
           res.send(campaignIds[0].id);
         else res.send("No campaign available");  
+        })
+        .catch((error) => {
+          console.log(error);
         })
 });
 //!-----------------Test endpoint section end----------------------

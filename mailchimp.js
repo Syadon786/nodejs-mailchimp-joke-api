@@ -1,5 +1,5 @@
 const jsonfile = require('jsonfile');
-const jokeapi = require(`${__dirname}/jokeapi.js`);
+const jokeapi = require(`./jokeapi.js`);
 
 //!https://mailchimp.com/developer/marketing/guides/create-your-first-audience/#add-a-contact-to-an-audience
 //-----------------------------------Mailchimp api setup-----------------------------------
@@ -65,38 +65,70 @@ exports.listCampaigns = async () => {
     const response = await mailchimp.campaigns.list({fields:  ["campaigns.id"]});
     return await response.campaigns;
 }
-  
-exports.setCampaignContent = async (id, joke) => {
-    const response = await mailchimp.campaigns.setContent(id, {plain_text: joke});
-    console.log(response);
+
+exports.setCampaignContent = (joke) => {
+    this.queryCampaignId().then(async () => {
+        const response = await mailchimp.campaigns.setContent(this.campaignId, {plain_text: joke});
+        console.log(response);
+    })
+    .catch((error) => {
+        console.log(error);
+    }); 
+}
+
+exports.sendCampaign = () => {
+    this.queryCampaignId().then(async () => {
+        const response = await mailchimp.campaigns.send(this.campaignId);
+        console.log(response);
+    })
+    .catch((error) => {
+        console.log(error);
+    }); 
 }
   
-exports.sendCampaign = async (id) => {
-    const response = await mailchimp.campaigns.send(id);
-    console.log(response);
-}
-  
-exports.deleteCampaign = async (id) => {
-    const response = await mailchimp.campaigns.remove(id);
-    console.log(response);
+exports.deleteCampaign = () => {
+    this.queryCampaignId().then(async () => {
+        const response = await mailchimp.campaigns.remove(this.campaignId);
+        console.log(response);
+    })
+    .catch((error) => {
+        console.log(error);
+    }); 
 }
 
 exports.setupAndSendCampaign = () => {
-    listCampaigns()
-    .then((campaignIds) => {
-      if(campaignIds.length > 0) {
-          this.campaignId = campaignIds[0].id;
-          console.log(`Campaign id: ${this.campaignId}`);
-          return jokeapi.getJoke()
-      }})
+    this.queryCampaignId().then(async () => {
+      console.log(`Campaign id is: ${this.campaignId}`);
+      jokeapi.getJoke()
       .then((joke) => {
         console.log(joke);
-        setCampaignContent(this.campaignId, joke); 
-        sendCampaign(this.campaignId)
+        this.setCampaignContent(joke); 
+        this.sendCampaign()
       })
       .catch((error) => {
         console.log(error);
       });
+    })
+    .catch((error) => {
+        console.log(error);
+    }); 
+}
+
+exports.queryCampaignId = () => {
+    return new Promise ((resolve, reject) => {
+        this.listCampaigns()
+        .then((campaignIds) => {
+        if(campaignIds.length > 0) {
+            this.campaignId = campaignIds[0].id;
+            resolve(true);
+        }
+        else {
+            reject(false);
+        }
+        })
+        .catch((error) => {
+            console.log(error);
+    })});
 }
 
 /*async function getListMemberEmails()  {   //filter csak e-mail info lekérdezésére fields: ["members.email_address"]
