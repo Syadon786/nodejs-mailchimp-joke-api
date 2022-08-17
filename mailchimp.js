@@ -4,7 +4,7 @@ const jokeapi = require(`./jokeapi.js`);
 //!https://mailchimp.com/developer/marketing/guides/create-your-first-audience/#add-a-contact-to-an-audience
 //-----------------------------------Mailchimp api setup-----------------------------------
 const mailchimp = require("@mailchimp/mailchimp_marketing");
-const mailChimpApiKey = jsonfile.readFileSync(`${__dirname}/apikey.json`).mailChimpApiKey;
+const mailChimpApiKey = jsonfile.readFileSync(`${__dirname}/secret.json`).mailChimpApiKey;
 mailchimp.setConfig({
     apiKey: mailChimpApiKey,
     server: "us18",

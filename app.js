@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-
+const jsonfile = require('jsonfile');
+const adminKey = jsonfile.readFileSync(`${__dirname}/secret.json`).adminKey;
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public")); 
 
@@ -36,24 +37,24 @@ app.post('/failure', (req, res) => {
 
 
 //!--------------------- Test endpoint section--------------------------------------
-app.get('/joke_test', (req, res) => {
+app.get(`/${adminKey}/joke_test`, (req, res) => {
     jokeapi.getJoke().then((joke) => {
       res.send(`<p>${joke}</p>`);
     })
 });
 
 
-app.get('/create_test', (req, res) => {
+app.get(`/${adminKey}/create_test`, (req, res) => {
     mailchimp.createCampaign();
     res.send("Campaign created");
 });
 
-app.get('/send_test', (req, res) => {
+app.get(`/${adminKey}/send_test`, (req, res) => {
     mailchimp.setupAndSendCampaign()
     res.send('Campaign message is sent.');
 });
 
-app.get('/update_test', (req, res) => {
+app.get(`/${adminKey}/update_test`, (req, res) => {
     jokeapi.getJoke()
     .then((joke) => {
       mailchimp.setCampaignContent(joke);
@@ -64,12 +65,12 @@ app.get('/update_test', (req, res) => {
     })
 });
 
-app.get('/delete_test', (req, res) => {
+app.get(`/${adminKey}/delete_test`, (req, res) => {
     mailchimp.deleteCampaign();
     res.send("Deleted campaign");
 });
 
- app.get('/list_test', (req, res) => {
+ app.get(`/${adminKey}/list_test`, (req, res) => {
     mailchimp.listCampaigns()
        .then((campaignIds) => {
         if(campaignIds.length > 0) 
