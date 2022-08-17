@@ -9,7 +9,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const mailchimp = require(`${__dirname}/mailchimp.js`);
 const jokeapi = require(`${__dirname}/jokeapi.js`);
+const schedule = require(`${__dirname}/schedule.js`);
 
+
+//------------------------Start automatic jobs-----------------------------------
+schedule.startJobs();
 
 //------------------------Start, and endpoints-----------------------------------
 const server = app.listen(process.env.PORT || 9000, () => {  
