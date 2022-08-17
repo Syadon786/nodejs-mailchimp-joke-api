@@ -1,10 +1,11 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 const bodyParser = require('body-parser');
 const jsonfile = require('jsonfile');
 const adminKey = jsonfile.readFileSync(`${__dirname}/secret.json`).adminKey;
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static("public")); 
+app.use(express.static(path.join(__dirname, 'public')));
 
 const mailchimp = require(`${__dirname}/mailchimp.js`);
 const jokeapi = require(`${__dirname}/jokeapi.js`);
@@ -16,7 +17,7 @@ const server = app.listen(process.env.PORT || 9000, () => {
 });
 
 app.get('/', (req, res) => {
-     res.sendFile(`${__dirname}/public/html/index.html`);
+     res.sendFile(path.resolve('public', 'html', 'index.html'));
 });
 
 app.post('/', (req, res) => {
@@ -24,10 +25,10 @@ app.post('/', (req, res) => {
       lastName: req.body.lastname, 
       email: req.body.email})
       .then((successPath) => {
-        res.sendFile(successPath);
+        res.sendFile(path.resolve('public', 'html', successPath));
       })
       .catch((failurePath) => {
-        res.sendFile(failurePath);
+        res.sendFile(path.resolve('public', 'html', failurePath));
       })
 });
 

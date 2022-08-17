@@ -29,12 +29,12 @@ exports.addContactMember = (subscribingUser) => {
         }
         catch (error) {
            console.log(error);
-           reject(`${__dirname}/public/html/failure.html`);
+           reject(`failure.html`);
         }; 
       
         console.log(response);
-        (response.status == "subscribed") ?  resolve(`${__dirname}/public/html/success.html`)
-        : reject(`${__dirname}/public/html/failure.html`);
+        (response.status == "subscribed") ?  resolve(`success.html`)
+        : reject(`failure.html`);
     });
 }
   
