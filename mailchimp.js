@@ -30,6 +30,7 @@ exports.addContactMember = (subscribingUser) => {
         catch (error) {
            console.log(error);
            reject(`failure.html`);
+           return;
         }; 
       
         console.log(response);
