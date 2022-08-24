@@ -1,14 +1,15 @@
 const https = require('https');
 //-----------------------------------JokeApi api setup-----------------------------------
-const jokeApiUrl = "https://v2.jokeapi.dev/joke/Dark?";
+const jokeApiUrl = "https://v2.jokeapi.dev/joke/Programming?";
 const jokeApiParameters = {
-    amount: 1
+    amount: 1,
+    blacklistFlags: ['nsfw', 'racist', 'sexist']
 };
 
 //!------------------Get a joke with jokeapi-----------------------------------
 exports.getJoke = () => {
     return new Promise((resolve, reject) =>  {
-        https.get(`${jokeApiUrl}${Object.entries(jokeApiParameters)[0].join('=')}`, (response) => {
+        https.get(`${jokeApiUrl}${new URLSearchParams(jokeApiParameters).toString()}`, (response) => {
         console.log(`Joke response status: ${response.statusCode}`);
         response.on('data', (data) => {       
               try {

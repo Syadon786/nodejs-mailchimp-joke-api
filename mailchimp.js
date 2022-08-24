@@ -7,10 +7,10 @@ const mailchimp = require("@mailchimp/mailchimp_marketing");
 const mailChimpApiKey = jsonfile.readFileSync(`${__dirname}/secret.json`).mailChimpApiKey;
 mailchimp.setConfig({
     apiKey: mailChimpApiKey,
-    server: "us18",
+    server: "us13",
   });
 
-exports.listId = "fc8da8e711";
+exports.listId = "a1f7c747ad";
 exports.campaignId = "";
 
 //-----------------------------------Mailchimp implemented functions-----------------------------------
